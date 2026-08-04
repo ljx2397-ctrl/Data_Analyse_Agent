@@ -41,7 +41,7 @@ LLM_STREAMING   = True                  # ← 原来缺失，agent.py 会 Import
 QUALITY_NULL_WARN      = 0.05   # 空值率 ≥ 5% 提示"偏高"
 QUALITY_NULL_BAD       = 0.30   # 空值率 ≥ 30% 判定"严重"
 QUALITY_IQR_MULT       = 1.5    # IQR 离群值倍数
-QUALITY_CLEAN_PREVIEW  = 10     # 清洗预览展示行数
+QUALITY_EXCEL_MAX_ROWS = 2000   # Excel 异常明细每个 Sheet 最多写入行数
 QUALITY_MONEY_KEYWORDS = ("金额", "价格", "费用", "成本", "余额",
                           "aum", "amount", "amt", "price", "money")
 

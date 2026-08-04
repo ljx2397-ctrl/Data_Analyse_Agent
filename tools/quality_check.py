@@ -1,33 +1,30 @@
 # tools/quality_check.py
 """
-tools/quality_check.py — 确定性数据质量检测与清洗预览（不走 LLM）。
+tools/quality_check.py — 确定性数据质量检测与异常明细 Excel（只分析，不动值）。
 
-用通用 pandas 规则覆盖常见问题：
-  1. 重复值：完全重复行数 / 重复率 / 示例
-  2. 空值：每列缺失数、缺失率、严重等级
+检测（不走 LLM）：
+  1. 重复值：完全重复行数 / 重复率 / 明细
+  2. 空值：每列缺失数、缺失率、严重等级、含空值行
   3. 金额/数值异常：负数、零值、IQR 离群值、无法解析的数值格式
   4. 日期合法性：范围、未来日期
 
-并提供通用清洗预览：完全去重 + 数值列按中位数填充 + 分类列按众数填充。
+Excel 报告：export_quality_excel 把各类异常的具体行拎出来导出。
+本工具只分析、不修改任何数据。
 
-仅覆盖通用规则；跨字段一致性、特定业务取值域等自定义检查
-超出本模块能力，由 LLM（analyse_tool）按用户要求生成代码处理。
+超出通用规则的自定义检查（跨字段一致性、特定业务取值域等）
+由 LLM（analyse_tool）按用户要求生成代码处理。
 """
+import os
+import uuid
+
+import numpy as np
 import pandas as pd
 
 from config import (
     QUALITY_NULL_WARN, QUALITY_NULL_BAD, QUALITY_IQR_MULT,
-    QUALITY_CLEAN_PREVIEW, QUALITY_MONEY_KEYWORDS,
+    QUALITY_EXCEL_MAX_ROWS, QUALITY_MONEY_KEYWORDS,
+    OUTPUT_DIR,
 )
-
-
-CLEAN_KEYWORDS = ("清洗", "去重", "删掉", "删除重复", "去掉重复",
-                  "填充", "补全", "处理空值", "处理缺失")
-
-
-def wants_clean(text: str) -> bool:
-    """判断用户意图是否偏向"清洗"（否则视为"检测"）。"""
-    return any(k in text for k in CLEAN_KEYWORDS)
 
 
 def _money_cols(df: pd.DataFrame) -> list[str]:
@@ -146,7 +143,7 @@ def run_quality_check(df: pd.DataFrame) -> dict:
     elif len(issues) <= 3:
         conclusion = "⚠️ 发现少量数据质量问题，可选择性处理"
     else:
-        conclusion = "🔴 发现较多数据质量问题，建议先进行数据清洗"
+        conclusion = "🔴 发现较多数据质量问题，建议核对原始数据或导出明细进一步确认"
 
     return {
         "rows": len(df), "cols": len(df.columns),
@@ -155,37 +152,182 @@ def run_quality_check(df: pd.DataFrame) -> dict:
     }
 
 
-def run_clean_preview(df: pd.DataFrame) -> dict:
-    """通用清洗预览：完全去重 + 数值列中位数填充 + 分类列众数填充。"""
-    notes = []
-    cleaned = df.copy()
-    before = len(cleaned)
+# ── Excel 报告 ───────────────────────────────────────────────────────────────
 
-    cleaned = cleaned.drop_duplicates()
-    removed = before - len(cleaned)
-    if removed:
-        notes.append(f"删除完全重复行 **{removed}** 行（重复率 {removed / before:.2%}）")
-    else:
-        notes.append("未发现完全重复行。")
+def _excel_fmts(wb):
+    return {
+        "title":  wb.add_format({"bold": True, "font_size": 14, "font_color": "#1F4E79",
+                                 "font_name": "微软雅黑", "bottom": 2, "bottom_color": "#2E75B6"}),
+        "header": wb.add_format({"bold": True, "bg_color": "#2E75B6", "font_color": "#FFFFFF",
+                                 "border": 1, "align": "center", "valign": "vcenter",
+                                 "font_name": "微软雅黑"}),
+        "even":   wb.add_format({"bg_color": "#EBF3FB", "border": 1, "border_color": "#D6E4F0",
+                                 "font_name": "微软雅黑"}),
+        "odd":    wb.add_format({"bg_color": "#FFFFFF", "border": 1, "border_color": "#D6E4F0",
+                                 "font_name": "微软雅黑"}),
+        "num_even": wb.add_format({"bg_color": "#EBF3FB", "border": 1, "border_color": "#D6E4F0",
+                                   "font_name": "微软雅黑", "num_format": "#,##0.00"}),
+        "num_odd":  wb.add_format({"bg_color": "#FFFFFF", "border": 1, "border_color": "#D6E4F0",
+                                   "font_name": "微软雅黑", "num_format": "#,##0.00"}),
+        "warn":   wb.add_format({"font_color": "#C00000", "font_name": "微软雅黑"}),
+    }
 
-    for col in cleaned.columns:
-        n_null = int(cleaned[col].isna().sum())
-        if n_null == 0:
-            continue
-        if pd.api.types.is_numeric_dtype(cleaned[col]):
-            med = cleaned[col].median()
-            cleaned[col] = cleaned[col].fillna(med)
-            notes.append(f"字段「{col}」{n_null} 个空值 → 按中位数 {med:,.2f} 填充")
+
+def _write_df_sheet(wb, name: str, df: pd.DataFrame, fmts: dict, title: str) -> None:
+    """把 DataFrame 写成一个带样式的工作表（标题 + 表头 + 斑马纹）。"""
+    df = df.copy()
+    for col in df.columns:
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            df[col] = df[col].dt.strftime("%Y-%m-%d")
+
+    ws = wb.add_worksheet(name)
+    ws.set_zoom(95)
+    ws.merge_range(0, 0, 0, max(len(df.columns) - 1, 0), title, fmts["title"])
+    ws.set_row(0, 24)
+
+    for ci, c in enumerate(df.columns):
+        ws.write(1, ci, str(c), fmts["header"])
+        width = max(len(str(c)) * 2 + 4, 14)
+        if df[c].dtype == object:
+            try:
+                width = max(width, int(df[c].astype(str).str.len().max()) + 2)
+            except Exception:
+                pass
+        ws.set_column(ci, ci, min(width, 40))
+
+    num_cols = set(df.select_dtypes(include="number").columns)
+    for ri, row in enumerate(df.itertuples(index=False)):
+        is_even = ri % 2 == 0
+        for ci, val in enumerate(row):
+            col = df.columns[ci]
+            if isinstance(val, float) and val != val:
+                val = ""
+            elif isinstance(val, np.integer):
+                val = int(val)
+            elif isinstance(val, np.floating):
+                val = float(val)
+            elif isinstance(val, np.bool_):
+                val = bool(val)
+            fmt_key = ("num_even" if is_even else "num_odd") if col in num_cols \
+                else ("even" if is_even else "odd")
+            ws.write(ri + 2, ci, val, fmts[fmt_key])
+    ws.freeze_panes(2, 0)
+
+
+def _anomaly_rows(df: pd.DataFrame, report: dict) -> pd.DataFrame:
+    """把数值异常的具体行拎出来：负数、离群值、无法解析的值。"""
+    rows = []
+    for r in report["money"]:
+        col = r["字段"]
+        raw = df[col]
+        if "无法解析" in r:
+            conv = pd.to_numeric(raw, errors="coerce")
+            mask = conv.isna() & raw.notna()
+            for idx in raw[mask].index:
+                rows.append({"原行号": idx, "字段": col, "异常类型": "无法解析",
+                             "值": raw[idx]})
         else:
-            mode_vals = cleaned[col].mode()
-            fill = mode_vals.iloc[0] if len(mode_vals) else "未知"
-            cleaned[col] = cleaned[col].fillna(fill)
-            notes.append(f"字段「{col}」{n_null} 个空值 → 按众数「{fill}」填充")
+            s = raw.dropna()
+            if s.empty:
+                continue
+            q1, q3 = s.quantile([0.25, 0.75]).values
+            iqr = q3 - q1
+            lo, hi = q1 - QUALITY_IQR_MULT * iqr, q3 + QUALITY_IQR_MULT * iqr
+            mask = (raw < 0) | (raw < lo) | (raw > hi)
+            for idx in raw[mask].index:
+                v = raw[idx]
+                typ = "负数" if v < 0 else "离群值"
+                rows.append({"原行号": idx, "字段": col, "异常类型": typ, "值": v})
+    return pd.DataFrame(rows)
 
-    if not any("空值" in n for n in notes):
-        notes.append("各字段均无空值，无需填充。")
-    return {"notes": notes, "before": before, "cleaned": cleaned}
 
+def _date_anomaly_rows(df: pd.DataFrame, report: dict) -> list[dict]:
+    """日期异常的具体行：未来日期、空日期（NaT）。"""
+    rows = []
+    today = pd.Timestamp.now().normalize()
+    for r in report["dates"]:
+        col = r["字段"]
+        raw = df[col]
+        for idx in raw[raw > today].index:
+            rows.append({"原行号": idx, "字段": col, "异常类型": "未来日期",
+                         "值": raw[idx].strftime("%Y-%m-%d")})
+        for idx in raw[raw.isna()].index:
+            rows.append({"原行号": idx, "字段": col, "异常类型": "空日期", "值": ""})
+    return rows
+
+
+def export_quality_excel(report: dict, df: pd.DataFrame,
+                         data_desc: str = "数据集") -> str:
+    """把检测结果与各类异常明细导出为 Excel，返回文件路径。"""
+    import xlsxwriter
+    path = os.path.join(OUTPUT_DIR, f"数据质量检测报告_{uuid.uuid4().hex[:6]}.xlsx")
+    wb = xlsxwriter.Workbook(path, {"nan_inf_to_errors": True})
+    fmts = _excel_fmts(wb)
+    cap = QUALITY_EXCEL_MAX_ROWS
+
+    # 1) 总览
+    ws = wb.add_worksheet("总览")
+    ws.set_zoom(95)
+    ws.merge_range(0, 0, 0, 3, "📋 数据质量检测报告", fmts["title"])
+    ws.set_row(0, 26)
+    overview = [
+        ("数据集",   data_desc),
+        ("规模",     f"{report['rows']:,} 行 × {report['cols']} 列"),
+        ("总体结论", report["conclusion"]),
+        ("检测时间", pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")),
+    ]
+    for i, (k, v) in enumerate(overview):
+        ws.write(2 + i, 0, k, fmts["header"])
+        ws.write(2 + i, 1, v)
+    ws.write(6, 0, "问题清单", fmts["header"])
+    if report["issues"]:
+        for i, issue in enumerate(report["issues"]):
+            ws.write(7 + i, 0, issue, fmts["warn"] if i < 3 else fmts["odd"])
+    else:
+        ws.write(7, 0, "未发现明显数据质量问题", fmts["odd"])
+
+    # 2) 重复值明细
+    dup = report["duplicates"]["sample"]
+    if len(dup):
+        dup_tbl = dup.reset_index().rename(columns={"index": "原行号"})
+        title = f"重复值明细（共 {len(dup)} 行，展示前 {min(len(dup), cap)} 行）"
+        _write_df_sheet(wb, "重复值明细", dup_tbl.head(cap), fmts, title)
+    else:
+        _write_df_sheet(wb, "重复值明细", pd.DataFrame({"提示": ["未发现完全重复行"]}),
+                        fmts, "重复值明细")
+
+    # 3) 空值明细
+    null_tbl = pd.DataFrame([
+        {"字段": r["字段"], "空值数": r["空值数"],
+         "空值率": f"{r['空值率']:.1%}", "等级": r["等级"]}
+        for r in report["nulls"]
+    ]) if report["nulls"] else pd.DataFrame({"提示": ["各字段均无空值"]})
+    _write_df_sheet(wb, "空值明细", null_tbl, fmts, "空值汇总（各字段缺失情况）")
+
+    # 4) 数值异常明细
+    ano = _anomaly_rows(df, report)
+    if len(ano):
+        title = f"金额数值异常明细（共 {len(ano)} 行，展示前 {min(len(ano), cap)} 行）"
+        _write_df_sheet(wb, "金额数值异常明细", ano.head(cap), fmts, title)
+    else:
+        _write_df_sheet(wb, "金额数值异常明细",
+                        pd.DataFrame({"提示": ["未发现金额/数值异常"]}), fmts,
+                        "金额数值异常明细")
+
+    # 5) 日期异常明细
+    date_rows = _date_anomaly_rows(df, report)
+    if date_rows:
+        title = f"日期异常明细（共 {len(date_rows)} 行，展示前 {min(len(date_rows), cap)} 行）"
+        _write_df_sheet(wb, "日期异常明细", pd.DataFrame(date_rows).head(cap), fmts, title)
+    else:
+        _write_df_sheet(wb, "日期异常明细",
+                        pd.DataFrame({"提示": ["未发现日期异常"]}), fmts, "日期异常明细")
+
+    wb.close()
+    return path
+
+
+# ── 报告文本 ─────────────────────────────────────────────────────────────────
 
 def _table_md(df: pd.DataFrame) -> str:
     """DataFrame → Markdown 表格；无 tabulate 时降级为手工拼表。"""
@@ -278,35 +420,7 @@ def format_quality_report(report: dict, data_desc: str = "数据集") -> str:
     L.append("")
 
     L.append("---")
-    L.append("💡 以上为通用规则检查（不走大模型）。如需自定义规则（如跨字段一致性、"
-             "特定业务取值域），直接说明需求，AI 将按你的规则生成代码检查。")
+    L.append("💡 本轮仅分析，不会修改任何数据；可点击下方按钮导出 Excel 分析报告。"
+             "如需自定义规则（如跨字段一致性、特定业务取值域），直接说明需求，"
+             "AI 将按你的规则生成代码检查。")
     return "\n".join(L)
-
-
-def format_clean_report(res: dict, data_desc: str = "数据集") -> str:
-    """把清洗预览渲染为 Markdown 文本。"""
-    cleaned = res["cleaned"]
-    L = []
-    L.append("🧹 数据清洗预览")
-    L.append(f"数据集：{data_desc} ｜ 清洗前 {res['before']:,} 行 × {cleaned.shape[1]} 列")
-    L.append("")
-    L.append("**处理步骤：**")
-    for n in res["notes"]:
-        L.append(f"- {n}")
-    L.append("")
-    L.append(f"**清洗后：** {len(cleaned):,} 行 × {cleaned.shape[1]} 列")
-    L.append("")
-    L.append("TABLE:")
-    L.append(_table_md(cleaned.head(QUALITY_CLEAN_PREVIEW)))
-    L.append(f"（清洗后数据预览，前 {min(len(cleaned), QUALITY_CLEAN_PREVIEW)} 行）")
-    L.append("")
-    L.append("⚠️ 当前仅为预览，**不会写回原始数据**；如需保存清洗结果，可让 AI 导出为 Excel。")
-    return "\n".join(L)
-
-
-def build_quality_report_text(df: pd.DataFrame, data_desc: str = "数据集",
-                              user_input: str = "") -> str:
-    """按用户意图返回检测报告或清洗预览（均为确定性输出，不调用 LLM）。"""
-    if wants_clean(user_input):
-        return format_clean_report(run_clean_preview(df), data_desc)
-    return format_quality_report(run_quality_check(df), data_desc)

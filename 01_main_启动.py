@@ -16,10 +16,12 @@ from data_loader import (load_dataframe, load_excel, detect_file_kind,
                          list_excel_sheets)
 from agent import get_agent
 from render import parse_output, render_message, render_table
-from tools.quality_check import build_quality_report_text
+from tools.quality_check import (
+    run_quality_check, format_quality_report, export_quality_excel,
+)
 
 # ── 数据质量检测：确定性通用检查（不走 LLM）──────────────────────────────
-# 命中质量关键词 → 直接执行通用 pandas 检查；
+# 命中质量关键词 → 直接执行通用 pandas 检查（只分析，不动值）；
 # 若同时命中自定义规则关键词（跨字段一致性、业务规则等），仍交给 LLM Agent。
 QUALITY_KEYWORDS = (
     "数据质量", "质检", "数据清洗", "清洗", "去重",
@@ -34,6 +36,7 @@ def _is_quality_intent(text: str) -> bool:
 
 def _is_custom_quality(text: str) -> bool:
     return any(k in text for k in CUSTOM_QUALITY_KEYWORDS)
+
 
 # ── 页面配置 ───────────────────────────────────────────────────────────────
 st.set_page_config(page_title="数据分析 Agent", page_icon="🏦", layout="wide")
@@ -83,17 +86,6 @@ with st.sidebar:
 
     if st.button("➕ 新建对话", use_container_width=True):
         create_new_session()
-        st.rerun()
-
-    if st.button("🔍 数据质量检测", use_container_width=True,
-                 disabled=(df is None),
-                 help="通用规则检查重复值、空值、金额异常，不走大模型"):
-        report_text = build_quality_report_text(df, data_desc, "")
-        clean_text, _, _, tables = parse_output(report_text)
-        append_message("user", "🔍 执行数据质量检测")
-        append_message("assistant", clean_text, tables=tables)
-        st.session_state.lc_messages.append(HumanMessage(content="🔍 执行数据质量检测"))
-        st.session_state.lc_messages.append(AIMessage(content=clean_text))
         st.rerun()
 
     st.subheader("📋 历史会话")
@@ -281,19 +273,21 @@ if user_input := st.chat_input("请描述你的分析需求..."):
     append_message("user", user_input)
     st.session_state.lc_messages.append(HumanMessage(content=user_input))
 
-    # ── 数据质量检测/清洗：确定性通用检查，不走 LLM ──────────────────────
+    # ── 数据质量检测：确定性通用检查，只分析不动值，不走 LLM ─────────────
     if _is_quality_intent(user_input) and not _is_custom_quality(user_input):
-        with st.chat_message("assistant", avatar="🏦"):
-            with st.spinner("🔍 正在执行数据质量检测..."):
-                report_text = build_quality_report_text(df, data_desc, user_input)
-            clean_text, _, _, tables = parse_output(report_text)
-            if clean_text:
-                st.markdown(clean_text)
-            for tbl in tables:
-                render_table(tbl)
+        report = run_quality_check(df)
+        report_text = format_quality_report(report, data_desc)
+        clean_text, _, _, tables = parse_output(report_text)
+        xlsx_path = None
+        try:
+            with st.spinner("正在生成 Excel 分析报告..."):
+                xlsx_path = export_quality_excel(report, df, data_desc)
+        except Exception as e:
+            clean_text = f"{clean_text}\n\n⚠️ Excel 分析报告生成失败：{e}"
         st.session_state.lc_messages.append(AIMessage(content=clean_text))
-        append_message("assistant", clean_text, tables=tables)
-        st.stop()
+        append_message("assistant", clean_text, tables=tables,
+                       xlsxs=[xlsx_path] if xlsx_path else [])
+        st.rerun()
 
     with st.chat_message("assistant", avatar="🏦"):
         status_ph = st.empty()
