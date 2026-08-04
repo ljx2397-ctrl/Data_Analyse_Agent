@@ -1,0 +1,12 @@
+streamlit>=1.35
+langchain>=0.2
+langchain-openai>=0.1
+langgraph>=0.1
+pandas>=2.0
+numpy>=1.26
+matplotlib>=3.8
+xlsxwriter>=3.1
+openpyxl>=3.1
+scikit-learn>=1.4
+openai>=1.0
+tabulate>=0.9
