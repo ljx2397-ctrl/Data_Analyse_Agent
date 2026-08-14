@@ -1,0 +1,43 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+.venv/
+.venv_build/
+
+# ── Node.js ──
+node_modules/
+frontend/dist/
+
+# ── PyInstaller 打包产物 ──
+release/
+build/
+build/work/
+build/dist/
+
+# ── 运行时数据（用户数据 / 知识库 / 图表 / 导出 / 轨迹）──
+backend/storage/sessions/
+backend/storage/charts/
+backend/storage/exports/
+backend/storage/meta/traces/
+backend/storage/knowledge/chroma/
+
+# ── 环境与配置 ──
+.env
+*.local
+
+# ── IDE ──
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── 系统文件 ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── 日志 ──
+*.log

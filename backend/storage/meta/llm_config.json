@@ -1,0 +1,53 @@
+{
+  "profiles": [
+    {
+      "id": "82d770f8",
+      "name": "qwen3.7-max",
+      "model": "qwen3.7-max",
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "sk-ws-H.EDPPIPL.UBqk.MEUCIQDWqiIJqwCfyWJt2zOrmOtzBuScK5HoX39SILI-WA8CxwIgb0gJOOTXw69zTRcwwwDHrvQUK26EFhXxOe_ASBdV4Wg",
+      "temperature": 0.0
+    },
+    {
+      "id": "7da66d7e",
+      "name": "kimi-k2.7-code",
+      "model": "kimi-k2.7-code",
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "sk-ws-H.EDPPIPL.UBqk.MEUCIQDWqiIJqwCfyWJt2zOrmOtzBuScK5HoX39SILI-WA8CxwIgb0gJOOTXw69zTRcwwwDHrvQUK26EFhXxOe_ASBdV4Wg",
+      "temperature": 0.0
+    },
+    {
+      "id": "a725bccf",
+      "name": "glm-5",
+      "model": "glm-5",
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "sk-ws-H.EDPPIPL.UBqk.MEUCIQDWqiIJqwCfyWJt2zOrmOtzBuScK5HoX39SILI-WA8CxwIgb0gJOOTXw69zTRcwwwDHrvQUK26EFhXxOe_ASBdV4Wg",
+      "temperature": 0.0
+    },
+    {
+      "id": "4700bb1a",
+      "name": "deepseek-v4-flash-0731",
+      "model": "deepseek-v4-flash-0731",
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "sk-ws-H.EDPPIPL.UBqk.MEUCIQDWqiIJqwCfyWJt2zOrmOtzBuScK5HoX39SILI-WA8CxwIgb0gJOOTXw69zTRcwwwDHrvQUK26EFhXxOe_ASBdV4Wg",
+      "temperature": 0.0
+    },
+    {
+      "id": "2d9ca68f",
+      "name": "kimi-k2.5",
+      "model": "kimi-k2.5",
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "sk-ws-H.EDPPIPL.UBqk.MEUCIQDWqiIJqwCfyWJt2zOrmOtzBuScK5HoX39SILI-WA8CxwIgb0gJOOTXw69zTRcwwwDHrvQUK26EFhXxOe_ASBdV4Wg",
+      "temperature": 0.0
+    },
+    {
+      "id": "50a5fbf7",
+      "name": "qwen3.6-max-preview",
+      "model": "qwen3.6-max-preview",
+      "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "api_key": "sk-ws-H.EDPPIPL.UBqk.MEUCIQDWqiIJqwCfyWJt2zOrmOtzBuScK5HoX39SILI-WA8CxwIgb0gJOOTXw69zTRcwwwDHrvQUK26EFhXxOe_ASBdV4Wg",
+      "temperature": 0.0
+    }
+  ],
+  "active_id": "4700bb1a"
+}

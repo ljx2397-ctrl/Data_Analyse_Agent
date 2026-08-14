@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 700" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif">
+  <defs>
+    <linearGradient id="band" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1c6fe0"/>
+      <stop offset="1" stop-color="#3b8ef0"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b7fb5"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect x="0" y="0" width="1100" height="700" rx="18" fill="#f6f9fd"/>
+
+  <!-- 标题 -->
+  <text x="40" y="52" font-size="26" font-weight="700" fill="#16335c">数据分析 Agent · 技术栈架构图</text>
+  <text x="40" y="80" font-size="14" fill="#6a7c99">Vue 3 + Element Plus ｜ FastAPI + LangChain + LangGraph ｜ 双模式智能体引擎</text>
+
+  <!-- 左列：用户/客户端 -->
+  <rect x="40" y="110" width="150" height="440" rx="12" fill="#eef4ff" stroke="#b6cdf0" stroke-width="1.5"/>
+  <rect x="40" y="110" width="150" height="40" rx="12" fill="#dbe9ff"/>
+  <text x="115" y="136" font-size="14" font-weight="700" fill="#1d4e9e" text-anchor="middle">用户 / 客户端</text>
+
+  <g font-size="13" fill="#2b4a77">
+    <rect x="56" y="166" width="118" height="44" rx="8" fill="#ffffff" stroke="#c3d6f2"/>
+    <text x="115" y="193" text-anchor="middle">🌐 Web 浏览器</text>
+    <rect x="56" y="226" width="118" height="44" rx="8" fill="#ffffff" stroke="#c3d6f2"/>
+    <text x="115" y="253" text-anchor="middle">💻 一键启动脚本</text>
+    <rect x="56" y="286" width="118" height="44" rx="8" fill="#ffffff" stroke="#c3d6f2"/>
+    <text x="115" y="313" text-anchor="middle">📊 Excel / CSV</text>
+    <rect x="56" y="346" width="118" height="44" rx="8" fill="#ffffff" stroke="#c3d6f2"/>
+    <text x="115" y="373" text-anchor="middle">🔌 第三方系统</text>
+  </g>
+
+  <!-- 中央主面板 -->
+  <rect x="250" y="110" width="600" height="480" rx="14" fill="#ffffff" stroke="#c9d7ef" stroke-width="1.5"/>
+  <path d="M250,124 a14,14 0 0 1 14,-14 h572 a14,14 0 0 1 14,14 v28 h-600 z" fill="url(#band)"/>
+  <text x="550" y="143" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">数据分析 Agent 系统</text>
+
+  <!-- 第一行：前后端框架 -->
+  <g font-size="13" fill="#1f3b63">
+    <rect x="265" y="170" width="180" height="66" rx="9" fill="#eaf3ff" stroke="#9ec5f5" stroke-width="1.2"/>
+    <text x="355" y="196" text-anchor="middle" font-weight="700">🖥️ Vue 3 前端</text>
+    <text x="355" y="220" text-anchor="middle" font-size="11" fill="#5a7396">Element Plus / Pinia / Vite</text>
+
+    <rect x="460" y="170" width="180" height="66" rx="9" fill="#eaf3ff" stroke="#9ec5f5" stroke-width="1.2"/>
+    <text x="550" y="196" text-anchor="middle" font-weight="700">⚡ FastAPI</text>
+    <text x="550" y="220" text-anchor="middle" font-size="11" fill="#5a7396">异步 API · SSE 流式推送</text>
+
+    <rect x="655" y="170" width="180" height="66" rx="9" fill="#eaf3ff" stroke="#9ec5f5" stroke-width="1.2"/>
+    <text x="745" y="196" text-anchor="middle" font-weight="700">🦜 LangChain / LangGraph</text>
+    <text x="745" y="220" text-anchor="middle" font-size="11" fill="#5a7396">LLM 框架 · Agent 编排</text>
+  </g>
+
+  <!-- 智能路由层 -->
+  <text x="550" y="268" font-size="13" font-weight="700" fill="#46618a" text-anchor="middle">智能路由层</text>
+  <rect x="265" y="280" width="570" height="54" rx="9" fill="#fff7e8" stroke="#f0cd8a" stroke-width="1.2"/>
+  <text x="550" y="303" text-anchor="middle" font-size="13" font-weight="700" fill="#8a5a12">🧭 Router 智能路由</text>
+  <text x="550" y="323" text-anchor="middle" font-size="11" fill="#9a7b3a">规则 fast-path（零开销） + LLM 结构化分类，自动选择执行模式</text>
+
+  <!-- 双模式 Agent 引擎 -->
+  <text x="550" y="366" font-size="13" font-weight="700" fill="#46618a" text-anchor="middle">双模式 Agent 引擎</text>
+  <g font-size="13" fill="#1f3b63">
+    <rect x="265" y="378" width="278" height="66" rx="9" fill="#eafaf0" stroke="#9ed8b4" stroke-width="1.2"/>
+    <text x="404" y="404" text-anchor="middle" font-weight="700">🤖 ReAct Agent</text>
+    <text x="404" y="428" text-anchor="middle" font-size="11" fill="#4d7a5f">简单任务 · 推理 + 行动</text>
+
+    <rect x="557" y="378" width="278" height="66" rx="9" fill="#f1ebfd" stroke="#c4b0ec" stroke-width="1.2"/>
+    <text x="696" y="404" text-anchor="middle" font-weight="700" fill="#4b2e8f">🧩 Plan-Execute-Replan</text>
+    <text x="696" y="428" text-anchor="middle" font-size="11" fill="#7a63b0">复杂任务 · 计划 / 执行 / 重规划</text>
+  </g>
+
+  <!-- 核心工具层 -->
+  <text x="550" y="476" font-size="13" font-weight="700" fill="#46618a" text-anchor="middle">核心工具层</text>
+  <g font-size="12" fill="#1f3b63">
+    <rect x="265" y="488" width="102" height="70" rx="9" fill="#f4f8ff" stroke="#b9d0ee" stroke-width="1.2"/>
+    <text x="316" y="516" text-anchor="middle">🔍 Schema</text>
+    <text x="316" y="540" text-anchor="middle" font-size="10" fill="#5a7396">字段探查</text>
+
+    <rect x="382" y="488" width="102" height="70" rx="9" fill="#f4f8ff" stroke="#b9d0ee" stroke-width="1.2"/>
+    <text x="433" y="516" text-anchor="middle">📈 Analyse</text>
+    <text x="433" y="540" text-anchor="middle" font-size="10" fill="#5a7396">pandas 分析</text>
+
+    <rect x="499" y="488" width="102" height="70" rx="9" fill="#f4f8ff" stroke="#b9d0ee" stroke-width="1.2"/>
+    <text x="550" y="516" text-anchor="middle">📊 Chart</text>
+    <text x="550" y="540" text-anchor="middle" font-size="10" fill="#5a7396">图表生成</text>
+
+    <rect x="616" y="488" width="102" height="70" rx="9" fill="#f4f8ff" stroke="#b9d0ee" stroke-width="1.2"/>
+    <text x="667" y="516" text-anchor="middle">📑 Excel</text>
+    <text x="667" y="540" text-anchor="middle" font-size="10" fill="#5a7396">报表导出</text>
+
+    <rect x="733" y="488" width="102" height="70" rx="9" fill="#f4f8ff" stroke="#b9d0ee" stroke-width="1.2"/>
+    <text x="784" y="516" text-anchor="middle">📚 Knowledge</text>
+    <text x="784" y="540" text-anchor="middle" font-size="10" fill="#5a7396">知识检索</text>
+  </g>
+
+  <!-- 底部：向量数据库 -->
+  <rect x="250" y="612" width="600" height="50" rx="10" fill="#f1ebfd" stroke="#c4b0ec" stroke-width="1.5"/>
+  <text x="550" y="642" text-anchor="middle" font-size="13.5" font-weight="700" fill="#553098">🗄️ Chroma 向量数据库 · 业务知识库语义检索（DashScope Embedding）</text>
+
+  <!-- 右列：数据与集成 -->
+  <rect x="890" y="110" width="170" height="480" rx="12" fill="#ecfbf0" stroke="#a8ddba" stroke-width="1.5"/>
+  <rect x="890" y="110" width="170" height="40" rx="12" fill="#d5f4dd"/>
+  <text x="975" y="136" font-size="14" font-weight="700" fill="#1e7d3c" text-anchor="middle">数据与集成</text>
+
+  <g font-size="13" fill="#2a5c3c">
+    <rect x="906" y="166" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="192" text-anchor="middle">📁 文件上传</text>
+    <rect x="906" y="220" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="246" text-anchor="middle">🔗 API 数据源</text>
+    <rect x="906" y="274" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="300" text-anchor="middle">🧠 Redis 会话存储</text>
+    <rect x="906" y="328" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="354" text-anchor="middle">💾 本地对象存储</text>
+    <rect x="906" y="382" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="408" text-anchor="middle">📦 图表 / 报表导出</text>
+    <rect x="906" y="436" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="462" text-anchor="middle">⚙️ 自定义技能</text>
+    <rect x="906" y="490" width="138" height="42" rx="8" fill="#ffffff" stroke="#b5e2c3"/>
+    <text x="975" y="516" text-anchor="middle">🤖 sklearn 建模</text>
+  </g>
+
+  <!-- 箭头：左 ↔ 中 -->
+  <line x1="190" y1="300" x2="246" y2="300" stroke="#5b7fb5" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="218" y="290" font-size="11" fill="#4a6890" text-anchor="middle">请求</text>
+  <line x1="246" y1="340" x2="190" y2="340" stroke="#5b7fb5" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="218" y="358" font-size="11" fill="#4a6890" text-anchor="middle">SSE 流式输出</text>
+
+  <!-- 箭头：中 ↔ 右 -->
+  <line x1="850" y1="320" x2="886" y2="320" stroke="#5b7fb5" stroke-width="2" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+  <text x="868" y="308" font-size="11" fill="#4a6890" text-anchor="middle">读写</text>
+
+  <!-- 工具层 → 向量库 连接点 -->
+  <circle cx="784" cy="570" r="3" fill="#7a63b0"/>
+  <line x1="784" y1="573" x2="784" y2="608" stroke="#7a63b0" stroke-width="1.5" stroke-dasharray="3 3"/>
+</svg>

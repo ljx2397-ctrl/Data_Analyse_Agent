@@ -1,0 +1,27 @@
+# backend/requirements.txt
+# FastAPI 后端依赖
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+
+# Redis 会话存储（未配置 REDIS_URL 时自动降级为 fakeredis）
+redis>=5.0
+fakeredis>=2.20
+
+# LLM / Agent
+langchain>=0.2
+langchain-openai>=0.1
+langgraph>=0.1
+openai>=1.0
+
+# 业务知识库向量检索（DashScope embedding + Chroma 向量库）
+chromadb>=0.5
+
+# 数据处理
+pandas>=2.0
+numpy>=1.26
+matplotlib>=3.8
+xlsxwriter>=3.1
+openpyxl>=3.1
+scikit-learn>=1.4
+tabulate>=0.9

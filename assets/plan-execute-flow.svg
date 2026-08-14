@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 480" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif">
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b7fb5"/>
+    </marker>
+    <marker id="arGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3f9257"/>
+    </marker>
+    <marker id="arOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c07a1e"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1100" height="480" rx="18" fill="#f6f9fd"/>
+
+  <text x="40" y="52" font-size="24" font-weight="700" fill="#16335c">Plan-Execute-Replan 工作流（LangGraph StateGraph）</text>
+  <text x="40" y="78" font-size="13.5" fill="#6a7c99">START → planner → executor → replanner，评审后决定继续执行 / 重规划 / 汇总收尾</text>
+
+  <!-- START -->
+  <circle cx="80" cy="250" r="26" fill="#1c6fe0"/>
+  <text x="80" y="255" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">START</text>
+
+  <!-- planner -->
+  <rect x="150" y="205" width="180" height="90" rx="12" fill="#eaf3ff" stroke="#9ec5f5" stroke-width="1.5"/>
+  <text x="240" y="240" font-size="15" font-weight="700" fill="#1d4e9e" text-anchor="middle">🗺️ Planner 规划器</text>
+  <text x="240" y="266" font-size="11.5" fill="#5a7396" text-anchor="middle">生成 / 重排分步计划</text>
+
+  <!-- executor -->
+  <rect x="420" y="205" width="180" height="90" rx="12" fill="#eafaf0" stroke="#9ed8b4" stroke-width="1.5"/>
+  <text x="510" y="240" font-size="15" font-weight="700" fill="#1e7d3c" text-anchor="middle">⚙️ Executor 执行器</text>
+  <text x="510" y="266" font-size="11.5" fill="#4d7a5f" text-anchor="middle">bind_tools 单步工具调用</text>
+
+  <!-- replanner -->
+  <rect x="690" y="205" width="180" height="90" rx="12" fill="#fff7e8" stroke="#f0cd8a" stroke-width="1.5"/>
+  <text x="780" y="240" font-size="15" font-weight="700" fill="#8a5a12" text-anchor="middle">🧐 Replanner 评审器</text>
+  <text x="780" y="266" font-size="11.5" fill="#9a7b3a" text-anchor="middle">continue / replan / finish</text>
+
+  <!-- synthesizer -->
+  <rect x="690" y="360" width="180" height="80" rx="12" fill="#f1ebfd" stroke="#c4b0ec" stroke-width="1.5"/>
+  <text x="780" y="392" font-size="15" font-weight="700" fill="#553098" text-anchor="middle">✍️ Synthesizer</text>
+  <text x="780" y="416" font-size="11.5" fill="#7a63b0" text-anchor="middle">汇总生成最终回复</text>
+
+  <!-- END -->
+  <circle cx="1010" cy="400" r="26" fill="#33465f"/>
+  <text x="1010" y="405" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">END</text>
+
+  <!-- 主流向箭头 -->
+  <line x1="106" y1="250" x2="146" y2="250" stroke="#5b7fb5" stroke-width="2" marker-end="url(#ar2)"/>
+  <line x1="330" y1="250" x2="416" y2="250" stroke="#5b7fb5" stroke-width="2" marker-end="url(#ar2)"/>
+  <text x="373" y="238" font-size="11" fill="#4a6890" text-anchor="middle">计划步骤</text>
+  <line x1="600" y1="250" x2="686" y2="250" stroke="#5b7fb5" stroke-width="2" marker-end="url(#ar2)"/>
+  <text x="643" y="238" font-size="11" fill="#4a6890" text-anchor="middle">执行结果</text>
+
+  <!-- continue 回路（上方） -->
+  <path d="M780,205 C780,130 510,130 510,201" fill="none" stroke="#3f9257" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arGreen)"/>
+  <rect x="582" y="118" width="126" height="26" rx="13" fill="#eafaf0" stroke="#9ed8b4"/>
+  <text x="645" y="136" font-size="12" font-weight="700" fill="#1e7d3c" text-anchor="middle">continue 下一步</text>
+
+  <!-- replan 回路（下方） -->
+  <path d="M690,285 C600,340 340,340 240,299" fill="none" stroke="#c07a1e" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arOrange)"/>
+  <rect x="398" y="322" width="134" height="26" rx="13" fill="#fff7e8" stroke="#f0cd8a"/>
+  <text x="465" y="340" font-size="12" font-weight="700" fill="#8a5a12" text-anchor="middle">replan 重规划</text>
+
+  <!-- finish → synthesizer -->
+  <line x1="780" y1="295" x2="780" y2="356" stroke="#5b7fb5" stroke-width="2" marker-end="url(#ar2)"/>
+  <rect x="796" y="312" width="86" height="26" rx="13" fill="#f1ebfd" stroke="#c4b0ec"/>
+  <text x="839" y="330" font-size="12" font-weight="700" fill="#553098" text-anchor="middle">finish 完成</text>
+
+  <!-- synthesizer → END -->
+  <line x1="870" y1="400" x2="980" y2="400" stroke="#5b7fb5" stroke-width="2" marker-end="url(#ar2)"/>
+
+  <!-- 底部说明 -->
+  <text x="40" y="452" font-size="12" fill="#6a7c99">💡 流式输出：graph.stream(stream_mode="messages")，通过 meta["langgraph_node"] 区分 token 来源节点，前端实时渲染各阶段轨迹。</text>
+</svg>
